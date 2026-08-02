@@ -95,3 +95,53 @@ export function isAttributeValueAvailable(
     )
   );
 }
+
+/**
+ * Resolves the full attribute selection when the user picks a new value.
+ *
+ * Logic:
+ * - Instead of disabling combinations that don't exist with the CURRENT selection,
+ *   this function finds the closest valid variant that contains the newly picked value,
+ *   and returns the FULL attribute set of that variant.
+ * - This prevents UI deadlocks where two attribute groups could end up disabling
+ *   each other permanently (e.g., picking "Orange" being disabled because "Size M"
+ *   is selected, while "Size M" is disabled because "Orange" is selected).
+ *
+ * @param variants - The full list of available product variants.
+ * @param attrName - The attribute group the user just interacted with (e.g., "Color").
+ * @param value - The value the user just picked (e.g., "Orange").
+ * @param currentSelected - The selection state before this pick.
+ * @returns The full attribute selection of the closest matching variant, or null if the value doesn't exist in any variant.
+ */
+export function resolveSelectionForAttribute(
+  variants: ProductVariant[],
+  attrName: string,
+  value: string,
+  currentSelected: Record<string, string>
+): Record<string, string> | null {
+  // Find every variant that contains the newly picked value
+  const candidates = variants.filter((v) =>
+    v.attributes.some((a) => a.name === attrName && a.value === value)
+  );
+  if (candidates.length === 0) return null;
+
+  // Prefer a candidate that still matches the OTHER currently selected attributes, if possible
+  const otherSelections = Object.entries(currentSelected).filter(
+    ([n]) => n !== attrName
+  );
+  const preferred = candidates.find((v) =>
+    otherSelections.every(([n, val]) =>
+      v.attributes.some((a) => a.name === n && a.value === val)
+    )
+  );
+
+  // Fall back to the first candidate that contains the picked value, even if other
+  // attributes must change as a result — this is what prevents the deadlock.
+  const chosen = preferred ?? candidates[0];
+
+  const newSelected: Record<string, string> = {};
+  chosen.attributes.forEach((a) => {
+    newSelected[a.name] = a.value;
+  });
+  return newSelected;
+}

@@ -90,12 +90,6 @@ function ProductDetailPage() {
     [activeVariants, selectedAttrs]
   );
 
-  // --- Event Handlers ---
-  const handleAttrChange = (attrName: string, value: string) => {
-    setSelectedAttrs((prev) => ({ ...prev, [attrName]: value }));
-    setQuantity(1); // Reset quantity when variant changes
-  };
-
   const handleAddToCart = async () => {
     if (!selectedVariant || !product) return;
 
@@ -206,7 +200,7 @@ function ProductDetailPage() {
                 <VariantSelector
                   variants={activeVariants}
                   selected={selectedAttrs}
-                  onChange={handleAttrChange}
+                  onChange={(newSelected) => setSelectedAttrs(newSelected)}
                 />
               </div>
             )}
