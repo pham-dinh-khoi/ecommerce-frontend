@@ -1,75 +1,88 @@
-# React + TypeScript + Vite
+# Ecommerce Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Giao diện người dùng cho nền tảng thương mại điện tử full-stack — xây dựng bằng React, TypeScript, Redux Toolkit và Tailwind CSS.
 
-Currently, two official plugins are available:
+> Backend tương ứng: [ecommerce-backend](https://github.com/phamdinhkhoik2/ecommerce-backend)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🎯 Điểm nổi bật
 
-## React Compiler
+- **Đồng bộ giỏ hàng Guest ↔ User liền mạch** — khách chưa đăng nhập vẫn giữ được giỏ hàng, tự động merge khi đăng nhập, không mất dữ liệu.
+- **Thanh toán PayPal tích hợp thật** — redirect, capture, xử lý cả 3 trạng thái (thành công/thất bại/hủy) với đồng bộ trạng thái real-time.
+- **Custom Dropdown cho cây phân cấp** — tự xây dựng component chọn danh mục dạng cây có Expand/Collapse, khắc phục giới hạn của thư viện UI khi cần lồng phần tử tương tác.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+React 18 · TypeScript · Vite · Redux Toolkit + redux-persist · React Router · React Hook Form + Zod · Tailwind CSS v4 · Shadcn/ui (Base UI)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## ✨ Tính năng
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Người dùng**
+- Đăng ký/đăng nhập, xác thực email, quên/đặt lại mật khẩu
+- Trang cá nhân: thông tin, avatar, đổi mật khẩu, sổ địa chỉ (dropdown Tỉnh/Huyện/Xã thật)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**Mua sắm**
+- Duyệt sản phẩm theo danh mục, tìm kiếm nâng cao (filter brand/giá/rating, sắp xếp đa dạng)
+- Chi tiết sản phẩm: chọn biến thể thông minh (tự động điều chỉnh tổ hợp hợp lệ, không bị khóa cứng)
+- Giỏ hàng, danh sách yêu thích, áp mã giảm giá
+- Đánh giá sản phẩm kèm ảnh, vote hữu ích
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**Đặt hàng & Thanh toán**
+- Checkout với chọn địa chỉ giao hàng, phương thức thanh toán (COD/PayPal)
+- Theo dõi đơn hàng, hủy đơn, xem lịch sử trạng thái
 
+**Quản trị (Admin)**
+- Quản lý danh mục (cây phân cấp có Expand/Collapse), sản phẩm (wizard 3 bước), đơn hàng, mã giảm giá, người dùng, đánh giá
+- Dashboard thống kê doanh thu cơ bản
+
+## 🏗️ Kiến trúc đáng chú ý
+
+**Đồng bộ Guest/User Cart:**
+```
+App khởi động → tạo/giữ guestId (localStorage) NẾU chưa đăng nhập
+Mọi request Cart → tự động gắn header X-Guest-Id (nếu có)
+Đăng nhập thành công → xóa guestId, Backend tự merge giỏ hàng Guest vào User
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Xử lý lỗi và trạng thái phiên đăng nhập tập trung:**
+```
+axiosInstance (interceptor)
+  ├─ Tự động gắn Access Token vào mọi request
+  ├─ 401 → tự động thử refresh token, hàng đợi request đang chờ
+  └─ Refresh thất bại → logout, điều hướng /login (soft navigation, không hard reload)
+```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📁 Cấu trúc thư mục
 
 ```
+src/
+├── components/       # ui/ (shadcn), layout/, common/ (dùng chung)
+├── features/           # theo domain: auth, category, product, cart, order...
+│   └── [domain]/
+│       ├── components/
+│       ├── xService.ts
+│       └── xSlice.ts
+├── pages/                 # lắp ráp Layout + Component thành trang
+├── routes/                   # AppRoute, PrivateRoute, AdminRoute
+├── store/                       # cấu hình Redux
+├── types/                          # interface khớp response Backend
+├── lib/validations/                   # Zod schema cho form
+└── utils/                                # hàm tiện ích
+```
+
+## 🚀 Cài đặt local
+
+```bash
+git clone https://github.com/phamdinhkhoik2/ecommerce-frontend.git
+cd ecommerce-frontend
+npm install
+```
+
+Tạo file `.env` với `VITE_API_URL` trỏ tới Backend đang chạy (mặc định `http://localhost:5000/api`).
+
+```bash
+npm run dev
+```
+
+## 📝 License
+
+MIT
