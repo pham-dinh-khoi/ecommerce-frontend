@@ -1,0 +1,1 @@
+export const SESSION_EXPIRED_MESSAGE = "__SESSION_EXPIRED__"; // tín hiệu nội bộ, không hiển thị trực tiếp
