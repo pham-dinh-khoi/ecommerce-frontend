@@ -70,6 +70,18 @@ function CheckoutPage() {
     dispatch(fetchProfile());
   }, [dispatch]);
 
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // The page is retrieved from bfcache (e.g., by pressing Back) — this resets the loading state.
+        setIsRedirecting(false);
+        setIsSubmitting(false);
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
   // Derived state to sync address selection when profile loads
   const [prevProfile, setPrevProfile] = useState(profile);
   if (profile !== prevProfile) {
