@@ -14,6 +14,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { loginThunk } from '@/features/auth/authSlice';
 import { fetchCart } from '@/features/cart/cartSlice';
 import { clearGuestId } from '@/lib/guestId';
+import { fetchProfile } from '@/features/user/userSlice';
 
 // Constants & Validations
 import {
@@ -63,6 +64,9 @@ function LoginForm() {
 
       // 2. Clear transient guest session data
       clearGuestId();
+
+      // Fetch Profile
+      dispatch(fetchProfile());
 
       /**
        * 3. Cart Synchronization
