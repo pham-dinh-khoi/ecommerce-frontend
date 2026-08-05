@@ -15,13 +15,15 @@ import { buildOrderDetailUrl } from '@/constants/routes';
 import { useAppDispatch } from '@/store/hooks';
 import type { PaymentStatusResult } from '@/types/payment.types';
 
+import { clearPendingOrder } from '@/lib/pendingOrder';
+
 /**
  * PaymentResultPage
- * 
+ *
  * Handles the landing page after a payment redirect.
  * It serves two purposes:
  * 1. Immediate feedback based on URL query parameters (e.g., success, failed, cancelled).
- * 2. Fallback verification: If the status isn't explicit in the URL, it polls the 
+ * 2. Fallback verification: If the status isn't explicit in the URL, it polls the
  *    backend API to confirm the actual payment status.
  */
 function PaymentResultPage() {
@@ -31,9 +33,11 @@ function PaymentResultPage() {
   const dispatch = useAppDispatch();
 
   // 'checking' is the initial state while waiting for the API confirmation
-  const [apiStatus, setApiStatus] = useState<'checking' | 'success' | 'failed'>('checking');
+  const [apiStatus, setApiStatus] = useState<'checking' | 'success' | 'failed'>(
+    'checking'
+  );
   const [result, setResult] = useState<PaymentStatusResult | null>(null);
-  
+
   // Ref to prevent duplicate API calls on re-renders
   const hasCheckedRef = useRef(false);
 
@@ -43,6 +47,7 @@ function PaymentResultPage() {
   }, [dispatch]);
 
   useEffect(() => {
+    clearPendingOrder(); // Clean up as soon as you reach the results page — whether successful or not, consider it "done".
     // If the URL already provides a definitive status, skip the API call.
     if (
       urlStatus === 'cancelled' ||
@@ -61,7 +66,9 @@ function PaymentResultPage() {
         .checkStatus(orderId)
         .then((res) => {
           setResult(res.data);
-          setApiStatus(res.data.paymentStatus === 'paid' ? 'success' : 'failed');
+          setApiStatus(
+            res.data.paymentStatus === 'paid' ? 'success' : 'failed'
+          );
         })
         .catch(() => setApiStatus('failed'));
     }, 1500);
@@ -82,11 +89,13 @@ function PaymentResultPage() {
   return (
     <MainLayout>
       <div className="mx-auto max-w-md px-4 py-20 text-center">
-        
         {/* Loading / Checking State */}
         {status === 'checking' && (
           <>
-            <Loader2 size={48} className="mx-auto animate-spin text-[#0047AB]" />
+            <Loader2
+              size={48}
+              className="mx-auto animate-spin text-[#0047AB]"
+            />
             <h1 className="mt-4 text-xl font-bold text-[#1A1A1A]">
               Đang xác nhận thanh toán...
             </h1>

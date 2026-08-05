@@ -31,6 +31,13 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import { ROUTES, buildOrderDetailUrl } from '@/constants/routes';
 import type { PaymentMethod, NewAddressInput } from '@/types/order.types';
 
+import {
+  savePendingOrder,
+  getPendingOrder,
+  clearPendingOrder,
+} from '@/lib/pendingOrder';
+import { orderService } from '@/features/order/orderService';
+
 // --- Constants ---
 const paymentOptions: { value: PaymentMethod; label: string }[] = [
   { value: 'cod', label: 'Thanh toán khi nhận hàng (COD)' },
@@ -76,11 +83,29 @@ function CheckoutPage() {
         // The page is retrieved from bfcache (e.g., by pressing Back) — this resets the loading state.
         setIsRedirecting(false);
         setIsSubmitting(false);
+
+        const pendingOrderId = getPendingOrder();
+
+        if (pendingOrderId) {
+          clearPendingOrder(); // Delete immediately to avoid repeated calls if the pageshow is sent multiple times.
+          orderService
+            .cancel(pendingOrderId, {
+              reason: 'User navigated back from payment gateway',
+            })
+            .then(() => {
+              dispatch(fetchCart()); // Resynchronize the shopping cart (even though it's empty and nothing has been changed in the cart).
+              toast.info('Đơn hàng chưa thanh toán đã được hủy tự động');
+            })
+            .catch(() => {
+              // Be silent if an error occurs — the order may have been processed by another thread (e.g., Webhook).
+              // (payment confirmed successfully previously), no need for confusing error messages.
+            });
+        }
       }
     };
     window.addEventListener('pageshow', handlePageShow);
     return () => window.removeEventListener('pageshow', handlePageShow);
-  }, []);
+  }, [dispatch]);
 
   // Derived state to sync address selection when profile loads
   const [prevProfile, setPrevProfile] = useState(profile);
@@ -130,6 +155,9 @@ function CheckoutPage() {
       // 3. Payment Processing
       if (paymentMethod === 'paypal') {
         setIsRedirecting(true);
+
+        savePendingOrder(order._id); // Save this IMMEDIATELY BEFORE leaving the page.
+
         const paymentResult = await paymentService.initiate(
           order._id,
           paymentMethod
@@ -143,7 +171,8 @@ function CheckoutPage() {
       }
 
       // 4. Default Success Handling (COD)
-      dispatch(clearCartLocal());
+      clearPendingOrder();
+      dispatch(clearCartLocal()); // Please ensure there is no remaining balance from your previous PayPal payment (if any).
       dispatch(clearAppliedCoupon());
       toast.success('Đặt hàng thành công!');
       navigate(buildOrderDetailUrl(order.orderCode));
