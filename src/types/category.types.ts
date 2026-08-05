@@ -23,6 +23,11 @@ export interface CategoryAncestor {
   slug: string;
 }
 
+export interface CategoryImage {
+  url: string;
+  publicId: string;
+}
+
 /**
  * The main Category entity representing the hierarchical data structure.
  * This model supports recursive nesting via the 'children' property.
@@ -41,7 +46,7 @@ export interface Category {
   description?: string;
 
   /** Optional URL or path to the category image. */
-  image?: string;
+  image?: CategoryImage;
 
   /** The ID of the parent category, or null if this is a top-level category. */
   parent: string | null;
@@ -58,7 +63,7 @@ export interface Category {
   /** Numerical value for custom sorting/ordering. */
   sortOrder: number;
 
-  /** 
+  /**
    * Optional nested children categories.
    * Enables deep tree rendering (e.g., recursive sidebar menus).
    */
@@ -85,7 +90,7 @@ export interface CreateCategoryPayload {
   parent?: string;
   sortOrder?: number;
   isActive?: boolean;
-  
+
   /** The binary image file to be uploaded. */
   imageFile?: File;
 }
@@ -100,7 +105,7 @@ export interface UpdateCategoryPayload {
   parent?: string;
   sortOrder?: number;
   isActive?: boolean;
-  
+
   /** The binary image file to be uploaded for updating. */
   imageFile?: File;
 }

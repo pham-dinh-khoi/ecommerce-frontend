@@ -176,9 +176,9 @@ function CategoryTable({ categories }: CategoryTableProps) {
                     </span>
 
                     {/* Image Thumbnail */}
-                    {cat.image && (
+                    {cat.image?.url && (
                       <img
-                        src={cat.image}
+                        src={cat.image.url}
                         alt={cat.name}
                         className="h-6 w-6 rounded object-cover"
                       />

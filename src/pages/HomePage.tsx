@@ -91,9 +91,9 @@ function HomePage() {
                 to={`/category/${cat.slug}`}
                 className="group flex flex-col items-center gap-2 rounded-lg border border-gray-100 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-[#0047AB] hover:shadow-md"
               >
-                {cat.image ? (
+                {cat.image?.url ? (
                   <img
-                    src={cat.image}
+                    src={cat.image.url}
                     alt={cat.name}
                     className="h-12 w-12 rounded-full object-cover transition-transform group-hover:scale-110"
                   />

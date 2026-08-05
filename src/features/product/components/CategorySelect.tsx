@@ -210,9 +210,9 @@ function CategorySelect({ categories, value, onChange }: CategorySelectProps) {
                 </span>
 
                 {/* Category Icon */}
-                {cat.image ? (
+                {cat.image?.url ? (
                   <img
-                    src={cat.image}
+                    src={cat.image.url}
                     alt=""
                     className="h-5 w-5 shrink-0 rounded object-cover"
                   />

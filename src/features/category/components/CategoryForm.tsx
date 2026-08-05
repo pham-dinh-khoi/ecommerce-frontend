@@ -67,7 +67,7 @@ function CategoryForm({ categories, initialData }: CategoryFormProps) {
   // from raw file object management.
   const [imageFile, setImageFile] = useState<File | undefined>(undefined);
   const [imagePreview, setImagePreview] = useState<string | undefined>(
-    initialData?.image
+    initialData?.image?.url
   );
   const [serverError, setServerError] = useState<string | null>(null);
 
