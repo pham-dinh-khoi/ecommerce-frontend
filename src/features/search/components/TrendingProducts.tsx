@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { searchService } from '@/features/search/searchService';
 import type { SearchResultItem } from '@/types/search.types';
 import SearchResultCard from './SearchResultCard';
+import {
+  PRODUCT_GRID_CLASSES,
+  ProductGridSkeleton,
+  ProductGridEmpty,
+} from './ProductGridStates';
 
 /**
- * Constant defining the number of skeleton placeholders to show during initial load.
- * This ensures the UI maintains a consistent shape before data arrives.
+ * The trending endpoint accepts no limit and can return more than a single
+ * grid row's worth of items. This constant is the one source of truth for
+ * how many trending products are displayed — it sizes both the loading
+ * skeleton and the rendered grid, so the row count never changes once data
+ * arrives.
  */
-const SKELETON_COUNT = 5;
+const TRENDING_DISPLAY_LIMIT = 5;
 
 /**
  * TrendingProducts Component
@@ -24,39 +31,35 @@ function TrendingProducts() {
   useEffect(() => {
     searchService
       .trending()
-      .then((res) => setProducts(res.data))
+      // The endpoint has no limit param, so cap the displayed set here to
+      // keep the grid at a single row matching the skeleton.
+      .then((res) => setProducts(res.data.slice(0, TRENDING_DISPLAY_LIMIT)))
       .catch(() => setProducts([])) // Silent failure: fallback to empty array on error
       .finally(() => setLoading(false)); // Ensure loading stops regardless of outcome
   }, []);
 
   // Early Return: Loading State
-  // Renders a grid of skeletons to prevent layout shift (CLS)
+  // Skeleton cards mirror the real card's reserved dimensions so the row
+  // height doesn't change once data arrives.
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-          <div
-            key={i}
-            className="overflow-hidden rounded-lg border border-gray-100"
-          >
-            <Skeleton className="aspect-square rounded-none" />
-            <div className="space-y-2 p-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-5 w-1/2" />
-            </div>
-          </div>
-        ))}
-      </div>
+      <ProductGridSkeleton
+        count={TRENDING_DISPLAY_LIMIT}
+        label="Đang tải sản phẩm nổi bật..."
+      />
     );
   }
 
   // Early Return: Empty State
-  // If no products are returned, we render nothing (or you could render a "No results" message)
-  if (products.length === 0) return null;
+  // Render a modest placeholder instead of `null` so the section doesn't
+  // collapse from the full skeleton grid straight to zero height.
+  if (products.length === 0) {
+    return <ProductGridEmpty message="Chưa có sản phẩm nổi bật." />;
+  }
 
   // Main Render: Successfully fetched products
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+    <div className={PRODUCT_GRID_CLASSES}>
       {products.map((p) => (
         <SearchResultCard key={p._id} product={p} />
       ))}
