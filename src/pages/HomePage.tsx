@@ -7,9 +7,9 @@ import { Truck, ShieldCheck, RotateCcw, Headphones } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import TrendingProducts from '@/features/search/components/TrendingProducts';
 import ProductSection from '@/features/search/components/ProductSection';
+import FeaturedCategories from '@/features/category/components/FeaturedCategories';
 
 // Hooks and Constants
-import { useAppSelector } from '@/store/hooks';
 import { ROUTES, buildSearchUrl } from '@/constants/routes';
 
 // --- Constants ---
@@ -37,9 +37,6 @@ const USP_FEATURES = [
  * (Hero, USP, Categories, Products, and Newsletter).
  */
 function HomePage() {
-  // Retrieve category tree data from the global store
-  const { tree } = useAppSelector((state) => state.category);
-
   return (
     <MainLayout>
       {/* --- Hero Section --- */}
@@ -80,34 +77,8 @@ function HomePage() {
       </section>
 
       {/* --- Featured Categories --- */}
-      {/* Conditionally render only if categories are available */}
-      {tree && tree.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-10">
-          <h2 className="text-xl font-bold text-[#1A1A1A]">Danh mục nổi bật</h2>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
-            {tree.slice(0, 6).map((cat) => (
-              <Link
-                key={cat._id}
-                to={`/category/${cat.slug}`}
-                className="group flex flex-col items-center gap-2 rounded-lg border border-gray-100 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-[#0047AB] hover:shadow-md"
-              >
-                {cat.image?.url ? (
-                  <img
-                    src={cat.image.url}
-                    alt={cat.name}
-                    className="h-12 w-12 rounded-full object-cover transition-transform group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="h-12 w-12 rounded-full bg-gray-100 transition-transform group-hover:scale-110" />
-                )}
-                <span className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#0047AB]">
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Reserves its own layout while loading so sections below it don't shift. */}
+      <FeaturedCategories />
 
       {/* --- Best Selling Products Section --- */}
       <section className="mx-auto max-w-7xl px-4 py-10">
