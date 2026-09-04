@@ -43,8 +43,9 @@ function SearchResultCard({ product }: SearchResultCardProps) {
 
       {/* Product Info Section */}
       <div className="p-3">
-        {/* Title with line clamping to ensure uniform card height */}
-        <h3 className="line-clamp-2 text-sm font-medium text-[#1A1A1A]">
+        {/* Title with line clamping; min-h-10 reserves the full 2-line height
+            so 1-line titles don't leave the card shorter than its neighbors. */}
+        <h3 className="line-clamp-2 min-h-10 text-sm font-medium text-[#1A1A1A]">
           {product.name}
         </h3>
 
@@ -55,18 +56,21 @@ function SearchResultCard({ product }: SearchResultCardProps) {
             : `${formatCurrency(product.minPrice)} - ${formatCurrency(product.maxPrice)}`}
         </p>
 
-        {/* Rating and Sales Count: Only rendered if there is at least one rating */}
-        {product.rating.count > 0 && (
-          <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
-            <Star size={12} className="fill-yellow-400 text-yellow-400" />
-            <span>{product.rating.average.toFixed(1)}</span>
+        {/* Rating and Sales Count: row height is always reserved (min-h-4) so
+            products without a rating don't render a shorter card. */}
+        <div className="mt-1 flex min-h-4 items-center gap-1 text-xs text-gray-500">
+          {product.rating.count > 0 && (
+            <>
+              <Star size={12} className="fill-yellow-400 text-yellow-400" />
+              <span>{product.rating.average.toFixed(1)}</span>
 
-            {/* Display sold count if it exists */}
-            {product.soldCount > 0 && (
-              <span className="ml-1">· Đã bán {product.soldCount}</span>
-            )}
-          </div>
-        )}
+              {/* Display sold count if it exists */}
+              {product.soldCount > 0 && (
+                <span className="ml-1">· Đã bán {product.soldCount}</span>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </Link>
   );

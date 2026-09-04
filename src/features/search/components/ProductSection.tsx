@@ -35,30 +35,46 @@ function ProductSection({ sort, limit = 5 }: ProductSectionProps) {
   }, [sort, limit]);
 
   // Guard Clause: Loading State
-  // We render a dynamic list of skeleton loaders that matches the expected item count.
-  // This prevents layout shift when the data arrives.
+  // Skeleton cards mirror the real card's reserved dimensions (2-line title,
+  // price line, rating row) so the row height doesn't change once data
+  // arrives, and expose a single concise status to assistive tech since the
+  // decorative skeleton grid itself is hidden from it.
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {Array.from({ length: limit }).map((_, i) => (
-          <div
-            key={i}
-            className="overflow-hidden rounded-lg border border-gray-100"
-          >
-            <Skeleton className="aspect-square rounded-none" />
-            <div className="space-y-2 p-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-5 w-1/2" />
+      <div role="status" aria-live="polite" aria-busy="true">
+        <span className="sr-only">Đang tải sản phẩm...</span>
+        <div
+          aria-hidden="true"
+          className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+        >
+          {Array.from({ length: limit }).map((_, i) => (
+            <div
+              key={i}
+              className="overflow-hidden rounded-lg border border-gray-100"
+            >
+              <Skeleton className="aspect-square rounded-none" />
+              <div className="p-3">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="mt-1.5 h-6 w-1/2" />
+                <Skeleton className="mt-1 h-4 w-2/3" />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
 
-  // Guard Clause: Empty State
-  // If no products are found, we return null to avoid rendering empty containers.
-  if (products.length === 0) return null;
+  // Guard Clause: Empty / Error State
+  // Render a modest placeholder instead of `null` so the section doesn't
+  // collapse from the full skeleton grid straight to zero height.
+  if (products.length === 0) {
+    return (
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed border-gray-200 text-sm text-gray-500">
+        Chưa có sản phẩm nào để hiển thị.
+      </div>
+    );
+  }
 
   // Render Section
   return (
