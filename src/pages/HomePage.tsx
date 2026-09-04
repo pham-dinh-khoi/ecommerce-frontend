@@ -176,6 +176,10 @@ function HomePage() {
           >
             <input
               type="email"
+              id="newsletter-email"
+              name="email"
+              autoComplete="email"
+              aria-label="Email đăng ký nhận ưu đãi"
               placeholder="Email của bạn"
               className="flex-1 rounded-md border-0 px-4 py-2 text-sm text-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#0047AB]"
             />

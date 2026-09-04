@@ -28,15 +28,21 @@ function CartIcon() {
   }, [dispatch]);
 
   const itemCount = cart?.totalItems ?? 0;
+  const cartLabel =
+    itemCount > 0 ? `Giỏ hàng, ${itemCount} sản phẩm` : 'Giỏ hàng';
 
   return (
     <Link
       to={ROUTES.CART}
+      aria-label={cartLabel}
       className="relative rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-50 hover:text-[#0047AB]"
     >
-      <ShoppingCart size={22} />
+      <ShoppingCart size={22} aria-hidden="true" />
       {itemCount > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+        <span
+          aria-hidden="true"
+          className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white"
+        >
           {itemCount > 9 ? '9+' : itemCount}
         </span>
       )}
@@ -64,6 +70,8 @@ function UserMenu() {
     <div className="relative">
       <button
         onClick={() => setIsUserMenuOpen((prev) => !prev)}
+        aria-label="Tài khoản"
+        aria-expanded={isUserMenuOpen}
         className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-50 sm:pr-3"
       >
         {isAuthenticated ? (
@@ -93,6 +101,7 @@ function UserMenu() {
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
+              aria-hidden="true"
             >
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
