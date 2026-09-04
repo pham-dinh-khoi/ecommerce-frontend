@@ -21,6 +21,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   status: 'idle', // idle | loading | succeeded | failed
   error: null,
+  bootstrapStatus: 'idle', // idle | pending | done
 };
 
 // -----------------------------------------------------------------------------
@@ -88,6 +89,27 @@ export const getMeThunk = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
     }
+  }
+);
+
+/**
+ * Non-blocking session bootstrap, run once on app load.
+ * Attempts to silently restore a session via the HTTP-only refresh cookie.
+ * `getMeThunk` is only dispatched when the refresh actually succeeds, so a
+ * guest visitor never triggers a profile request that is guaranteed to fail.
+ * This never rejects: any failure just means "no session to restore".
+ */
+export const bootstrapAuthThunk = createAsyncThunk(
+  'auth/bootstrap',
+  async (_, { dispatch }) => {
+    try {
+      await dispatch(refreshAccessTokenThunk()).unwrap();
+    } catch {
+      return; // No valid session (e.g. guest, expired refresh token) — stop here.
+    }
+
+    // Refresh succeeded, so a profile fetch is expected to succeed too.
+    await dispatch(getMeThunk()).unwrap().catch(() => {});
   }
 );
 
@@ -212,6 +234,17 @@ const authSlice = createSlice({
         state.user = null;
         state.accessToken = null;
         state.isAuthenticated = false;
+      })
+
+      // --- Session Bootstrap Lifecycle ---
+      .addCase(bootstrapAuthThunk.pending, (state) => {
+        state.bootstrapStatus = 'pending';
+      })
+      .addCase(bootstrapAuthThunk.fulfilled, (state) => {
+        state.bootstrapStatus = 'done';
+      })
+      .addCase(bootstrapAuthThunk.rejected, (state) => {
+        state.bootstrapStatus = 'done';
       });
   },
 });
