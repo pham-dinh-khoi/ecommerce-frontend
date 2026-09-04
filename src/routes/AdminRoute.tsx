@@ -10,9 +10,21 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAppSelector } from "@/store/hooks";
 import { ROUTES } from "@/constants/routes";
+import RouteLoadingFallback from "@/components/common/RouteLoadingFallback";
 
 function AdminRoute() {
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user, bootstrapStatus } = useAppSelector(
+    (state) => state.auth
+  );
+
+  /**
+   * Session bootstrap (silent refresh + profile fetch) hasn't resolved yet.
+   * Don't redirect a potentially-authenticated admin away before we know
+   * their real session/role state.
+   */
+  if (bootstrapStatus !== "done") {
+    return <RouteLoadingFallback />;
+  }
 
   /**
    * Level 1: Authentication Check

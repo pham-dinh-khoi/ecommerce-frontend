@@ -104,4 +104,14 @@ export interface AuthState {
 
   /** Holds error messages from the backend to display in UI feedback. */
   error: string | null;
+
+  /**
+   * Tracks the background session-bootstrap lifecycle (refresh token + profile
+   * fetch on app load), independently of `status`/`isAuthenticated`:
+   * - 'idle': bootstrap not started
+   * - 'pending': bootstrap in progress
+   * - 'done': bootstrap finished — combine with `isAuthenticated` to know
+   *   whether the resolved session is authenticated or unauthenticated.
+   */
+  bootstrapStatus: 'idle' | 'pending' | 'done';
 }

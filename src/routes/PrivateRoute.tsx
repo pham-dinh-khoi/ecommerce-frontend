@@ -9,10 +9,23 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAppSelector } from '@/store/hooks';
 import { ROUTES } from '@/constants/routes';
+import RouteLoadingFallback from '@/components/common/RouteLoadingFallback';
 
 function PrivateRoute() {
   // Extract authentication status from the Redux store
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { isAuthenticated, bootstrapStatus } = useAppSelector(
+    (state) => state.auth
+  );
+
+  /**
+   * Session bootstrap (silent refresh + profile fetch) hasn't resolved yet.
+   * A potentially-authenticated user must not be redirected to /login before
+   * we actually know their session state, so show a route-level loading
+   * state instead of guessing.
+   */
+  if (bootstrapStatus !== 'done') {
+    return <RouteLoadingFallback />;
+  }
 
   /**
    * GUARD LOGIC:
