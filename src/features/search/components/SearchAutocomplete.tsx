@@ -105,6 +105,10 @@ function SearchAutocomplete() {
           />
           <input
             type="text"
+            id="header-search-autocomplete"
+            name="search"
+            autoComplete="off"
+            aria-label="Tìm kiếm sản phẩm"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);

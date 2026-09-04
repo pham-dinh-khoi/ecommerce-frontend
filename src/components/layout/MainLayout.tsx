@@ -21,7 +21,7 @@ function MainLayout({ children }: MainLayoutProps) {
             <a href="#" className="hover:underline">Thông tin Vận chuyển</a>
             <a href="#" className="hover:underline">Liên hệ</a>
           </div>
-          <p className="text-sm text-gray-500">© 2026 Ecommerce Store. Tất cả quyền được bảo lưu.</p>
+          <p className="text-sm text-gray-600">© 2026 Ecommerce Store. Tất cả quyền được bảo lưu.</p>
         </div>
       </footer>
     </div>
